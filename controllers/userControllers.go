@@ -7,6 +7,7 @@ import (
 	"lctzz540/models"
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -39,6 +40,14 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 	}
 	return check, msg
 }
+func IsEmailValid(email *string) bool {
+	re := regexp.MustCompile(`^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$`)
+	if re.MatchString(string(*email)) {
+		return true
+	} else {
+		return false
+	}
+}
 
 func SignUp() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -47,6 +56,7 @@ func SignUp() gin.HandlerFunc {
 
 		validationErr := validate.Struct(user)
 
+		defer cancel()
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error:": validationErr.Error()})
 			return
@@ -57,6 +67,7 @@ func SignUp() gin.HandlerFunc {
 		if err != nil {
 			log.Panic(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the email"})
+			return
 		}
 
 		password := HashPassword(*user.Password)
@@ -67,10 +78,28 @@ func SignUp() gin.HandlerFunc {
 		if err != nil {
 			log.Panic(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the phone number"})
+			return
+		}
+		if count > 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email or phone number already exists"})
+			return
+		}
+
+		count, err = userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
+		defer cancel()
+		if err != nil {
+			log.Panic(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the phone number"})
+			return
 		}
 
 		if count > 0 {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email or phone number already exists"})
+			return
+		}
+		if !IsEmailValid(user.Email) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Email is not valid"})
+			return
 		}
 		user.ID = primitive.NewObjectID()
 
