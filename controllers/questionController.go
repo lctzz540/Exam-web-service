@@ -24,6 +24,16 @@ func derefString(s *string) string {
 
 func GetOwnQuestions() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		type Request struct {
+			Owner string `json:"owner" validate:"required"`
+		}
+		var request Request
+		validationErr := validate.Struct(request)
+		if validationErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+			return
+		}
+
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var question models.Question
 		var foundQuestion []models.Question
@@ -57,11 +67,19 @@ func AddOwnQuestions() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var question models.Question
+
+		defer cancel()
+		validationErr := validate.Struct(question)
+		if validationErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+			return
+		}
 		defer cancel()
 		if err := c.ShouldBindJSON(&question); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
 		question.QuestionID = primitive.NewObjectID()
 		question.Create_at = time.Now()
 		question.Lasted_update = time.Now()

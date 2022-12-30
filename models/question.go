@@ -11,7 +11,7 @@ type Question struct {
 	QuestionText  *string            `json:"questionText" validate:"required,min=2,max=100"`
 	AnswerOptions []AnswerOption     `json:"answerOptions" validate:"required"`
 	Describle     *string            `json:"describle"`
-	Subject       *string
+	Subject       *string            `json:"Subject" validate:"required"`
 	Owner         *string
 	Create_at     time.Time
 	Lasted_update time.Time

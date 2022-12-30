@@ -55,6 +55,9 @@ func SignUp() gin.HandlerFunc {
 		var user models.User
 
 		validationErr := validate.Struct(user)
+		if validationErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+		}
 
 		defer cancel()
 		if err := c.BindJSON(&user); err != nil {
