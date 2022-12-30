@@ -75,6 +75,13 @@ func AddOwnQuestions() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
 		}
+		var filter = bson.M{"questionText": question.QuestionText}
+		var foundQuestion models.Question
+		existedErr := questionCollection.FindOne(ctx, filter).Decode(&foundQuestion)
+		if existedErr == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Question already exists"})
+			return
+		}
 
 		question.QuestionID = primitive.NewObjectID()
 		question.Create_at = time.Now()

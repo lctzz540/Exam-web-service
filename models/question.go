@@ -8,8 +8,8 @@ import (
 
 type Question struct {
 	QuestionID    primitive.ObjectID `bson:"_id"`
-	QuestionText  *string            `json:"questionText" validate:"required,min=2,max=100"`
-	AnswerOptions []AnswerOption     `json:"answerOptions" validate:"required"`
+	QuestionText  *string            `bson:"questionText" json:"questionText" validate:"required,min=2,max=100"`
+	AnswerOptions []AnswerOption     `bson:"answerOptions" json:"answerOptions" validate:"required"`
 	Describle     *string            `json:"describle"`
 	Subject       *string            `json:"subject" validate:"required"`
 	Owner         *string            `json:"owner"`
