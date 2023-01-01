@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"lctzz540/database"
+	"lctzz540/helpers"
 	"lctzz540/models"
 	"log"
 	"net/http"
@@ -54,14 +55,15 @@ func SignUp() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var user models.User
 
+		defer cancel()
+
+		if err := c.BindJSON(&user); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error:": err.Error()})
+			return
+		}
 		validationErr := validate.Struct(user)
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
-		}
-
-		defer cancel()
-		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error:": validationErr.Error()})
 			return
 		}
 
@@ -77,7 +79,7 @@ func SignUp() gin.HandlerFunc {
 		user.Password = &password
 
 		count, err = userCollection.CountDocuments(ctx, bson.M{"phone": user.Phone})
-		defer cancel()
+
 		if err != nil {
 			log.Panic(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the phone number"})
@@ -104,7 +106,11 @@ func SignUp() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Email is not valid"})
 			return
 		}
+
 		user.ID = primitive.NewObjectID()
+		token, refreshToken, _ := helpers.GenerateAllTokens(*user.Email, *user.Name)
+		user.Token = &token
+		user.Refresh_token = &refreshToken
 
 		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, user)
 		if insertErr != nil {
@@ -130,14 +136,14 @@ func Login() gin.HandlerFunc {
 		}
 
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
-		defer cancel()
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
 			return
 		}
 
 		passwordIsValid, msg := VerifyPassword(*user.Password, *foundUser.Password)
-		defer cancel()
+
 		if passwordIsValid != true {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
@@ -151,6 +157,8 @@ func Login() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		token, refreshToken, _ := helpers.GenerateAllTokens(*foundUser.Email, *foundUser.Name)
+		helpers.UpdateAllTokens(token, refreshToken, *user.Email)
 		c.JSON(http.StatusOK, foundUser)
 	}
 }
