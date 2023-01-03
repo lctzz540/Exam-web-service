@@ -25,21 +25,15 @@ func derefString(s *string) string {
 func GetOwnQuestions() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-		var question models.Question
 		var foundQuestion []models.Question
 
-		defer cancel()
-		if err := c.BindJSON(&question); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		userEmail, exited := c.Get("contextEmail")
+		if !exited {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error while get context"})
 			return
 		}
 
-		if question.Owner == nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "required owner"})
-			return
-		}
-
-		cur, err := questionCollection.Find(ctx, bson.M{"owner": question.Owner})
+		cur, err := questionCollection.Find(ctx, bson.M{"owner": userEmail})
 		defer cancel()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "No question is found"})
@@ -86,6 +80,12 @@ func AddOwnQuestions() gin.HandlerFunc {
 		question.QuestionID = primitive.NewObjectID()
 		question.Create_at = time.Now()
 		question.Lasted_update = time.Now()
+
+		value, ok := c.Value("contextEmail").(string)
+		if !ok {
+
+		}
+		question.Owner = &value
 
 		defer cancel()
 		_, err := questionCollection.InsertOne(ctx, question)

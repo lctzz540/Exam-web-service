@@ -50,33 +50,35 @@ func GenerateAllTokens(email string, name string) (signedToken string, signedRef
 	return token, refreshToken, err
 }
 
-func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
-	token, err := jwt.ParseWithClaims(
-		signedToken,
-		&SignedDetails{},
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte(SECRET_KEY), nil
-		},
-	)
+func ValidateToken(signedToken string) (claims *SignedDetails, err error) {
+	token, err := jwt.ParseWithClaims(signedToken, &SignedDetails{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SECRET_KEY), nil
+	})
 
 	if err != nil {
-		msg = err.Error()
-		return
+		fmt.Println("Error in parsing token:", err)
+		return nil, err
+	}
+
+	fmt.Println("Token:", token)
+	fmt.Println("Valid:", token.Valid)
+
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
 	}
 
 	claims, ok := token.Claims.(*SignedDetails)
 	if !ok {
-		msg = fmt.Sprintf("the token is invalid")
-		msg = err.Error()
-		return
+		return nil, fmt.Errorf("invalid claims in token")
 	}
 
-	if claims.ExpiresAt < time.Now().Local().Unix() {
-		msg = fmt.Sprintf("token is expired")
-		msg = err.Error()
-		return
+	fmt.Println("Claims:", claims)
+
+	if time.Now().Unix() > claims.ExpiresAt {
+		return nil, fmt.Errorf("token expired")
 	}
-	return claims, msg
+
+	return claims, nil
 }
 
 func UpdateAllTokens(signedToken string, signedRefreshToken string, email string) {
