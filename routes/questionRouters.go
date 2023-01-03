@@ -8,6 +8,6 @@ import (
 )
 
 func QuestionRoutes(incomingRoutes *gin.Engine) {
-	incomingRoutes.POST("/question/getownquestion", middlewares.JWTMiddleware(), controllers.GetOwnQuestions())
+	incomingRoutes.GET("/question/getownquestion", middlewares.JWTMiddleware(), controllers.GetOwnQuestions())
 	incomingRoutes.POST("/question/addownquestion", middlewares.JWTMiddleware(), controllers.AddOwnQuestions())
 }
