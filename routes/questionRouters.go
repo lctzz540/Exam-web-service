@@ -1,10 +1,9 @@
 package routes
 
 import (
-	"lctzz540/controllers"
-	"lctzz540/middlewares"
-
 	"github.com/gin-gonic/gin"
+	"github.com/lctzz540/Exam-web-service/controllers"
+	"github.com/lctzz540/Exam-web-service/middlewares"
 )
 
 func QuestionRoutes(incomingRoutes *gin.Engine) {

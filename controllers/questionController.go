@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"context"
-	"lctzz540/database"
-	"lctzz540/models"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lctzz540/Exam-web-service/database"
+	"github.com/lctzz540/Exam-web-service/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,6 +27,7 @@ func GetOwnQuestions() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var foundQuestion []models.Question
 
+		defer cancel()
 		userEmail, exited := c.Get("contextEmail")
 		if !exited {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error while get context"})

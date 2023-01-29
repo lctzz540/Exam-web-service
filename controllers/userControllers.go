@@ -3,9 +3,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"lctzz540/database"
-	"lctzz540/helpers"
-	"lctzz540/models"
 	"log"
 	"net/http"
 	"regexp"
@@ -13,6 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/lctzz540/Exam-web-service/database"
+	"github.com/lctzz540/Exam-web-service/helpers"
+	"github.com/lctzz540/Exam-web-service/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

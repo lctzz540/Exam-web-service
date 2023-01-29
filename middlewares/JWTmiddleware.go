@@ -1,9 +1,10 @@
 package middlewares
 
 import (
-	"github.com/gin-gonic/gin"
-	"lctzz540/helpers"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/lctzz540/Exam-web-service/helpers"
 )
 
 func JWTMiddleware() gin.HandlerFunc {

@@ -1,4 +1,4 @@
-module lctzz540
+module github.com/lctzz540/Exam-web-service
 
 go 1.19
 
