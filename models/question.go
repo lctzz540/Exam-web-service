@@ -11,6 +11,7 @@ type Question struct {
 	QuestionText  *string            `bson:"questionText" json:"questionText" validate:"required,min=2,max=100"`
 	AnswerOptions []AnswerOption     `bson:"answerOptions" json:"answerOptions" validate:"required"`
 	Describle     *string            `json:"describle"`
+	Image         *string            `bson:"image" json:"image"`
 	Subject       *string            `json:"subject" validate:"required"`
 	Owner         *string            `json:"owner"`
 	Create_at     time.Time
