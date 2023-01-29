@@ -1,10 +1,11 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"lctzz540/routes"
-	"net/http"
+	"github.com/lctzz540/Exam-web-service/routes"
 )
 
 func main() {
