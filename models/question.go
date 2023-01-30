@@ -8,7 +8,7 @@ import (
 
 type Question struct {
 	QuestionID    primitive.ObjectID `bson:"_id"`
-	QuestionText  *string            `bson:"questionText" json:"questionText" validate:"required,min=2,max=100"`
+	QuestionText  *string            `bson:"questionText" json:"questionText" validate:"required"`
 	AnswerOptions []AnswerOption     `bson:"answerOptions" json:"answerOptions" validate:"required"`
 	Describle     *string            `json:"describle"`
 	Image         *string            `bson:"image" json:"image"`

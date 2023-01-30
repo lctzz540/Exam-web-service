@@ -11,7 +11,11 @@ import (
 func main() {
 	router := gin.New()
 	router.Use(gin.Logger())
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowCredentials = true
+	config.AddAllowHeaders("Authorization")
+	router.Use(cors.New(config))
 	routes.AuthRoutes(router)
 	routes.QuestionRoutes(router)
 	router.GET("/", func(ctx *gin.Context) {
