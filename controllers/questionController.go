@@ -98,3 +98,55 @@ func AddOwnQuestions() gin.HandlerFunc {
 		c.JSON(http.StatusCreated, gin.H{"status": "success"})
 	}
 }
+
+func AddManyOwnQuestions() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		var questions []models.Question
+		if err := c.ShouldBindJSON(&questions); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		var successCount int
+		var failCount int
+		for _, question := range questions {
+			validationErr := validate.Struct(question)
+			if validationErr != nil {
+				failCount++
+				continue
+			}
+
+			var filter = bson.M{"questionText": question.QuestionText}
+			var foundQuestion models.Question
+			existedErr := questionCollection.FindOne(ctx, filter).Decode(&foundQuestion)
+			if existedErr == nil {
+				failCount++
+				continue
+			}
+
+			question.QuestionID = primitive.NewObjectID()
+			question.Create_at = time.Now()
+			question.Lasted_update = time.Now()
+
+			value, ok := c.Value("contextEmail").(string)
+			if !ok {
+				failCount++
+				continue
+			}
+			question.Owner = &value
+
+			_, err := questionCollection.InsertOne(ctx, question)
+			if err != nil {
+				failCount++
+				continue
+			}
+
+			successCount++
+		}
+
+		c.JSON(http.StatusCreated, gin.H{"status": "success", "successCount": successCount, "failCount": failCount})
+	}
+}
