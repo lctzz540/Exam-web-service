@@ -1,22 +1,13 @@
-
-# Build stage
-FROM golang:latest AS build-env
-
+FROM golang:latest
 WORKDIR /app
 
 COPY . .
-
 RUN go mod download
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main .
+COPY *.go ./
 
-# Run stage
-FROM alpine:latest
+RUN go build -buildvcs=false .
 
-RUN apk --no-cache add ca-certificates
+EXPOSE 8080
 
-WORKDIR /root/
-
-COPY --from=build-env /app/main .
-
-CMD ["./main"]
+CMD [ "./Exam-web-service" ]
