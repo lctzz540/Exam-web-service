@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag lctzz540/Exam-web-service
+      run: docker build . --file Dockerfile --tag lctzz540/Exam-web-service:$(date +%s)
