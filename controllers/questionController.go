@@ -150,3 +150,31 @@ func AddManyOwnQuestions() gin.HandlerFunc {
 		c.JSON(http.StatusCreated, gin.H{"status": "success", "successCount": successCount, "failCount": failCount})
 	}
 }
+func GetQuestionByID() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var requestBody struct {
+			QuestionID string `json:"questionID"`
+		}
+
+		err := c.BindJSON(&requestBody)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+			return
+		}
+
+		questionID, err := primitive.ObjectIDFromHex(requestBody.QuestionID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid question ID"})
+			return
+		}
+
+		var question models.Question
+		err = questionCollection.FindOne(context.TODO(), bson.M{"_id": questionID}).Decode(&question)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, question)
+	}
+}
